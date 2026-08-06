@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DocuMind AI</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="Images/chatbot.png" />
+  </head>
+
+  <body>
+    <div class="app">
+      <!-- ================= SIDEBAR ================= -->
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-icon">AI</div>
+          <div class="brand-text">
+            <h1>DocuMind AI</h1>
+            <p>Document Q&amp;A</p>
+          </div>
+        </div>
+
+        <label class="upload-box" for="fileUpload">
+          <input type="file" id="fileUpload" hidden accept=".pdf,.docx,.txt" />
+          <svg
+            class="upload-icon"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 3v12" />
+            <path d="M7 8l5-5 5 5" />
+            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+          </svg>
+          <span class="upload-title">Upload your document</span>
+          <span class="upload-sub">PDF, DOCX, TXT · up to 20 MB</span>
+        </label>
+
+        <p class="section-label">Your documents</p>
+        <div class="doc-list"></div>
+
+        <p class="sidebar-footnote">
+          AI responses are generated using the uploaded document as context.
+        </p>
+      </aside>
+
+      <!-- ================= MAIN ================= -->
+      <main class="main">
+        <header class="doc-header">
+          <div class="header-content">
+            <h2>👋 Welcome to DocuMind AI</h2>
+            <p>Your AI assistant for understanding documents.</p>
+          </div>
+
+          <button id="new-chat">➕ New Chat</button>
+        </header>
+
+        <div class="chat-area" id="chatArea"></div>
+
+        <div class="suggestions">
+          <button class="suggestion-pill">Summarise in 5 bullets</button>
+          <button class="suggestion-pill">List every deadline</button>
+          <button class="suggestion-pill">Explain section 4</button>
+          <button class="suggestion-pill">Find risks &amp; blockers</button>
+        </div>
+
+        <div class="input-bar">
+          <input
+            type="text"
+            id="chatInput"
+            placeholder="Ask a question about your document..."
+          />
+
+          <button
+            class="icon-btn send-btn"
+            id="sendBtn"
+            aria-label="Send message"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="800px"
+              height="800px"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              <path
+                d="M6.99811 10.2467L7.43298 11.0077C7.70983 11.4922 7.84825 11.7344 7.84825 12C7.84825 12.2656 7.70983 12.5078 7.43299 12.9923L7.43298 12.9923L6.99811 13.7533C5.75981 15.9203 5.14066 17.0039 5.62348 17.5412C6.1063 18.0785 7.24961 17.5783 9.53623 16.5779L15.8119 13.8323C17.6074 13.0468 18.5051 12.654 18.5051 12C18.5051 11.346 17.6074 10.9532 15.8119 10.1677L9.53624 7.4221C7.24962 6.42171 6.1063 5.92151 5.62348 6.45883C5.14066 6.99615 5.75981 8.07966 6.99811 10.2467Z"
+                stroke="#222222"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <p class="input-hint">
+          Press Enter to send · Shift + Enter for a new line
+        </p>
+      </main>
+    </div>
+  </body>
+</html>
