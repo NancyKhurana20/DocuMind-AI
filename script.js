@@ -1,5 +1,5 @@
 const fileUpload = document.querySelector("#fileUpload");
-
+const docList = document.querySelector(".doc-list");
 //Types of files which are allowed for users to upload
 const allowedTypes = [
   "application/pdf",
@@ -18,10 +18,28 @@ const handleFileUpload = function (event) {
   //Checking if the uploaded file is valid or not
   const isValidFile = allowedTypes.includes(file.type);
   if (isValidFile) {
-    console.log(file);
+    displayUploadedFile(file);
   } else {
     console.log("File type is not valid");
   }
 };
+function getFileType(file) {
+  return file.name.split(".").pop().toUpperCase();
+}
 //As soon as file will be uploaded this event handler will be called and handleFileUpload function will be called
 fileUpload.addEventListener("change", handleFileUpload);
+
+function displayUploadedFile(file) {
+  const typeOfFile = getFileType(file);
+  const html = `
+  <li class="doc-item active">
+    <div class="doc-icon" ${typeOfFile}>${typeOfFile}</div>
+
+      <div>
+        <p class="doc-name">${file.name}</p>
+        <p class="doc-sub">${typeOfFile} Document</p>
+      </div>
+  </li>
+  `;
+  docList.innerHTML = html;
+}
