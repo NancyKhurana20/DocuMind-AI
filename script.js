@@ -1,5 +1,6 @@
 const fileUpload = document.querySelector("#fileUpload");
 const docList = document.querySelector(".doc-list");
+let documentText = "";
 //Types of files which are allowed for users to upload
 const allowedTypes = [
   "application/pdf",
@@ -19,6 +20,7 @@ const handleFileUpload = function (event) {
   const isValidFile = allowedTypes.includes(file.type);
   if (isValidFile) {
     displayUploadedFile(file);
+    extractDocumentText(file);
   } else {
     console.log("File type is not valid");
   }
@@ -42,4 +44,31 @@ function displayUploadedFile(file) {
   </li>
   `;
   docList.innerHTML = html;
+}
+function extractDocumentText(file) {
+  console.log(`Extracting the text from ${file.name}`);
+  const type = getFileType(file);
+  switch (type) {
+    case "PDF":
+      readPdf(file);
+      break;
+    case "DOCX":
+      readDocx(file);
+      break;
+    case "TXT":
+      readTxt(file);
+      break;
+  }
+}
+function readTxt(file) {
+  //Creating a reader which will read our file
+  const reader = new FileReader();
+
+  // Tell the browser what to do when reading finishes
+  reader.onload = function () {
+    documentText = reader.result;
+  };
+
+  // Start reading the file
+  reader.readAsText(file);
 }
