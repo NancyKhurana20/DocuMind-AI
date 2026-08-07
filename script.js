@@ -1,6 +1,10 @@
 const fileUpload = document.querySelector("#fileUpload");
 const docList = document.querySelector(".doc-list");
 let documentText = "";
+const chatInput = document.querySelector("#chatInput");
+const sendBtn = document.querySelector("#sendBtn");
+const chatArea = document.querySelector("#chatArea");
+
 //Types of files which are allowed for users to upload
 const allowedTypes = [
   "application/pdf",
@@ -72,3 +76,29 @@ function readTxt(file) {
   // Start reading the file
   reader.readAsText(file);
 }
+function handleSendMessage() {
+  //Get input value
+  const inputText = chatInput.value;
+  //Validate input
+  if (inputText.trim() === "") {
+    return;
+  }
+  //check document exists
+  if (documentText === "") {
+    console.log("file has not been uploaded");
+    return;
+  }
+  //display user message
+  displayUserMessage(inputText);
+  chatInput.value = "";
+  chatInput.focus();
+}
+function displayUserMessage(message) {
+  const div = document.createElement("div");
+  div.classList.add("message user-message");
+  const p = document.createElement("p");
+  p.textContent = message;
+  div.appendChild(p);
+  chatArea.appendChild(div);
+}
+sendBtn.addEventListener("click", handleSendMessage);
