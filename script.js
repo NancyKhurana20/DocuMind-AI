@@ -90,15 +90,38 @@ function handleSendMessage() {
   }
   //display user message
   displayUserMessage(inputText);
+  const loadingElement = showLoadingMessage();
+  setTimeout(function () {
+    loadingElement.remove();
+    displayAiMessage("This is a temporary response");
+  }, 2000);
   chatInput.value = "";
   chatInput.focus();
 }
 function displayUserMessage(message) {
   const div = document.createElement("div");
-  div.classList.add("message user-message");
+  div.classList.add("message", "user-message");
   const p = document.createElement("p");
   p.textContent = message;
   div.appendChild(p);
   chatArea.appendChild(div);
 }
 sendBtn.addEventListener("click", handleSendMessage);
+
+function displayAiMessage(message) {
+  const div = document.createElement("div");
+  div.classList.add("message", "ai-message");
+  const p = document.createElement("p");
+  p.textContent = message;
+  div.appendChild(p);
+  chatArea.appendChild(div);
+}
+function showLoadingMessage() {
+  const div = document.createElement("div");
+  div.classList.add("message", "ai-message", "loading");
+  const p = document.createElement("p");
+  p.textContent = "Thinking...";
+  div.appendChild(p);
+  chatArea.appendChild(div);
+  return div;
+}
