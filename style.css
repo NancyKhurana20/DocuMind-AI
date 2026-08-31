@@ -396,6 +396,7 @@
       border: 1px solid var(--border);
       border-top-left-radius: 4px;
       color: var(--text);
+      white-space: pre-wrap;
     }
 
     .ai-bubble ol {
@@ -698,4 +699,8 @@
 }
 .doc-header {
     backdrop-filter: blur(10px);
+}
+.doc-item > div:last-child {
+  min-width: 0;
+  flex: 1;
 }

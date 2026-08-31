@@ -192,21 +192,44 @@ async function getAIResponse(question) {
               parts: [
                 {
                   text: `
-You are DocuMind AI, an assistant for answering questions about an uploaded document.
+You are DocuMind AI, an AI assistant that answers questions ONLY using the uploaded document.
 
-Rules:
-1. Answer the question using only the information provided in the document.
-2. Do not use outside knowledge.
-3. Do not make up or assume information that is not present in the document.
-4. If the answer cannot be found in the document, clearly say that the information is not available in the uploaded document.
-5. Keep the answer clear and concise.
-
-Document:
+DOCUMENT:
 ${documentText}
 
-Question:
+USER QUESTION:
 ${question}
-                  `,
+
+IMPORTANT INSTRUCTIONS:
+
+1. Use ONLY information present in the document.
+2. Do not make up or assume information that is not present in the document.
+3. If the answer cannot be found in the document, clearly say:
+   "This information is not available in the uploaded document."
+
+4. Understand what the user is asking and answer directly.
+
+5. FORMAT YOUR RESPONSE CLEARLY:
+   - For summaries or questions asking for multiple points, use a numbered list.
+   - Put each point on a separate line.
+   - Keep each point concise and easy to read.
+   - For example:
+
+     1. First important point.
+     2. Second important point.
+     3. Third important point.
+     4. Fourth important point.
+     5. Fifth important point.
+
+   - Do not put all points into one paragraph.
+   - Do not use unnecessary introductions or conclusions.
+   - Use headings when they improve readability.
+   - Use short paragraphs for normal questions.
+
+6. If the user asks for "5 bullet points", provide exactly 5 points.
+7. If the user asks for a summary, summarize the most important information from the document.
+8. Keep the response concise unless the user specifically asks for a detailed explanation.
+`,
                 },
               ],
             },
@@ -240,3 +263,29 @@ suggestionPills.forEach(function (suggestionPill) {
     chatInput.focus();
   });
 });
+
+function readPdf(file) {
+  const reader = new FileReader();
+
+  reader.onload = async function () {
+    const typedArray = new Uint8Array(reader.result);
+
+    const pdf = await pdfjsLib.getDocument(typedArray).promise;
+
+    let extractedText = "";
+
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+      const page = await pdf.getPage(pageNumber);
+
+      const textContent = await page.getTextContent();
+
+      const pageText = textContent.items.map((item) => item.str).join(" ");
+
+      extractedText += pageText + "\n";
+    }
+
+    documentText = extractedText;
+  };
+
+  reader.readAsArrayBuffer(file);
+}
