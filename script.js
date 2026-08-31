@@ -108,6 +108,13 @@ function displayUserMessage(message) {
 }
 sendBtn.addEventListener("click", handleSendMessage);
 
+chatInput.addEventListener("keydown", function (e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    handleSendMessage();
+  }
+});
+
 function displayAiMessage(message) {
   const div = document.createElement("div");
   div.classList.add("message", "ai-message");
