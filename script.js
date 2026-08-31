@@ -76,7 +76,7 @@ function readTxt(file) {
   // Start reading the file
   reader.readAsText(file);
 }
-function handleSendMessage() {
+async function handleSendMessage() {
   //Get input value
   const inputText = chatInput.value;
   //Validate input
@@ -91,10 +91,10 @@ function handleSendMessage() {
   //display user message
   displayUserMessage(inputText);
   const loadingElement = showLoadingMessage();
-  setTimeout(function () {
-    loadingElement.remove();
-    displayAiMessage("This is a temporary response");
-  }, 2000);
+  const aiResponse = await getAIResponse(inputText);
+
+  loadingElement.remove();
+  displayAiMessage(aiResponse);
   chatInput.value = "";
   chatInput.focus();
 }
@@ -124,4 +124,58 @@ function showLoadingMessage() {
   div.appendChild(p);
   chatArea.appendChild(div);
   return div;
+}
+
+async function getAIResponse(question) {
+  //question is what user asked/typed
+  try {
+    //fetch() is JavaScript's built-in way of making an HTTP request
+    //await means Wait for Gemini's response before continuing with this function
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${API_KEY}`,
+      {
+        method: "POST", //we are sending info to gemini that's why we used post
+        headers: {
+          "Content-Type": "application/json", //this tells gemini that i m sending data in JSON format
+        },
+        //body is the actual data we are sending to gemini
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `
+You are an AI assistant that answers questions only using the uploaded document.
+
+Document:
+${documentText}
+
+Question:
+${question}
+                  `,
+                },
+              ],
+            },
+          ],
+        }),
+      },
+    );
+    //gemini sends the response in JSON format , we convert the JSON response into a JS object and store it in data
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Gemini API Error:", data);
+      return "Gemini could not process the request.";
+    }
+
+    if (!data.candidates || data.candidates.length === 0) {
+      console.error("No response from Gemini:", data);
+      return "Gemini did not return an answer.";
+    }
+
+    return data.candidates[0].content.parts[0].text;
+  } catch (error) {
+    console.error("Request Error:", error);
+    return "Something went wrong while contacting Gemini.";
+  }
 }
