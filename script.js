@@ -4,6 +4,7 @@ let documentText = "";
 const chatInput = document.querySelector("#chatInput");
 const sendBtn = document.querySelector("#sendBtn");
 const chatArea = document.querySelector("#chatArea");
+const suggestionPills = document.querySelectorAll(".suggestion-pill");
 
 //Types of files which are allowed for users to upload
 const allowedTypes = [
@@ -100,11 +101,21 @@ async function handleSendMessage() {
 }
 function displayUserMessage(message) {
   const div = document.createElement("div");
-  div.classList.add("message", "user-message");
-  const p = document.createElement("p");
-  p.textContent = message;
-  div.appendChild(p);
+  div.classList.add("message", "user");
+
+  const avatar = document.createElement("div");
+  avatar.classList.add("avatar", "user-avatar");
+  avatar.textContent = "You";
+
+  const bubble = document.createElement("div");
+  bubble.classList.add("bubble", "user-bubble");
+  bubble.textContent = message;
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+
   chatArea.appendChild(div);
+  scrollChatToBottom();
 }
 sendBtn.addEventListener("click", handleSendMessage);
 
@@ -117,20 +128,49 @@ chatInput.addEventListener("keydown", function (e) {
 
 function displayAiMessage(message) {
   const div = document.createElement("div");
-  div.classList.add("message", "ai-message");
-  const p = document.createElement("p");
-  p.textContent = message;
-  div.appendChild(p);
+  div.classList.add("message");
+
+  const avatar = document.createElement("div");
+  avatar.classList.add("avatar", "ai-avatar");
+  avatar.textContent = "AI";
+
+  const bubble = document.createElement("div");
+  bubble.classList.add("bubble", "ai-bubble");
+  bubble.textContent = message;
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+
   chatArea.appendChild(div);
+  scrollChatToBottom();
 }
 function showLoadingMessage() {
   const div = document.createElement("div");
-  div.classList.add("message", "ai-message", "loading");
-  const p = document.createElement("p");
-  p.textContent = "Thinking...";
-  div.appendChild(p);
+  div.classList.add("message");
+
+  const avatar = document.createElement("div");
+  avatar.classList.add("avatar", "ai-avatar");
+  avatar.textContent = "AI";
+
+  const bubble = document.createElement("div");
+  bubble.classList.add("bubble", "ai-bubble", "typing-bubble");
+
+  for (let i = 0; i < 3; i++) {
+    const dot = document.createElement("span");
+    dot.classList.add("typing-dot");
+    bubble.appendChild(dot);
+  }
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+
   chatArea.appendChild(div);
+  scrollChatToBottom();
+
   return div;
+}
+function scrollChatToBottom() {
+  chatArea.scrollTop = chatArea.scrollHeight;
 }
 
 async function getAIResponse(question) {
@@ -193,3 +233,10 @@ ${question}
     return "Something went wrong while contacting Gemini.";
   }
 }
+
+suggestionPills.forEach(function (suggestionPill) {
+  suggestionPill.addEventListener("click", function () {
+    chatInput.value = suggestionPill.textContent;
+    chatInput.focus();
+  });
+});
