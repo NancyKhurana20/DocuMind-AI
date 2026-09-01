@@ -5,6 +5,7 @@ const chatInput = document.querySelector("#chatInput");
 const sendBtn = document.querySelector("#sendBtn");
 const chatArea = document.querySelector("#chatArea");
 const suggestionPills = document.querySelectorAll(".suggestion-pill");
+const newChat = document.querySelector("#new-chat");
 
 //Types of files which are allowed for users to upload
 const allowedTypes = [
@@ -373,3 +374,10 @@ function readDocx(file) {
 
   reader.readAsArrayBuffer(file);
 }
+
+newChat.addEventListener("click", function () {
+  chatArea.replaceChildren();
+  docList.replaceChildren();
+  documentText = "";
+  fileUpload.value = "";
+});
