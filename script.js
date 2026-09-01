@@ -341,3 +341,19 @@ function readPdf(file) {
 // documentText
 //    ↓
 // Gemini uses it to answer questions
+
+function readDocx(file) {
+  const reader = new FileReader();
+
+  reader.onload = async function () {
+    const arrayBuffer = reader.result;
+
+    const result = await mammoth.extractRawText({
+      arrayBuffer: arrayBuffer,
+    });
+
+    documentText = result.value;
+  };
+
+  reader.readAsArrayBuffer(file);
+}
