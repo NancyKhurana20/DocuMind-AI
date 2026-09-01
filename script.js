@@ -91,13 +91,13 @@ async function handleSendMessage() {
   }
   //display user message
   displayUserMessage(inputText);
+  chatInput.value = "";
+  chatInput.focus();
   const loadingElement = showLoadingMessage();
   const aiResponse = await getAIResponse(inputText);
 
   loadingElement.remove();
   displayAiMessage(aiResponse);
-  chatInput.value = "";
-  chatInput.focus();
 }
 function displayUserMessage(message) {
   const div = document.createElement("div");
@@ -237,13 +237,29 @@ IMPORTANT INSTRUCTIONS:
         }),
       },
     );
+
+    // Handle API errors
+    if (!response.ok) {
+      if (response.status === 429) {
+        return "Too many requests. Please wait a few seconds and try again.";
+      }
+
+      if (response.status === 503) {
+        return "Gemini is temporarily unavailable. Please try again in a few seconds.";
+      }
+
+      if (response.status === 400) {
+        return "The request sent to Gemini was invalid.";
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        return "There is a problem with the Gemini API key.";
+      }
+
+      return "Something went wrong while contacting Gemini.";
+    }
     //gemini sends the response in JSON format , we convert the JSON response into a JS object and store it in data
     const data = await response.json();
-
-    if (!response.ok) {
-      console.error("Gemini API Error:", data);
-      return "Gemini could not process the request.";
-    }
 
     if (!data.candidates || data.candidates.length === 0) {
       console.error("No response from Gemini:", data);
