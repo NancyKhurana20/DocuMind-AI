@@ -264,16 +264,40 @@ suggestionPills.forEach(function (suggestionPill) {
   });
 });
 
+//we cannot just use the reader.readAsText(file) like we did in the the readTXT function , bcox TXT file contains simply a plain text but it is not the same is the PDF , bcoz PDF has  pages, fonts, positions, text objects, etc.
+
+//Therefore we use PDF.js
+//PDF.js is a JavaScript library that understands the internal structure of a PDF and allows our browser code to read its pages and extract their text.
+
+//In html we already loaded the PDF.js
+
+// PDF.js loads
+//      ↓
+// pdfjsLib becomes available
+//      ↓
+// script.js can use pdfjsLib
+
 function readPdf(file) {
-  const reader = new FileReader();
+  const reader = new FileReader(); //FileReader is a browser API that allows JavaScript to read files selected by the user.
+
+  //When file is finished loading /reading , then we execute this function
 
   reader.onload = async function () {
+    //reader.result contains the data that FileReader has read
+    //We convert that data into Uint8Array
+    //PDF.js can accept this byte-array representation of the PDF data.
+
+    //reader.result already contains the raw binary data ,Uint8Array doesn't convert text into binary. Instead, it creates a convenient byte-level view of that binary data.
     const typedArray = new Uint8Array(reader.result);
 
-    const pdf = await pdfjsLib.getDocument(typedArray).promise;
+    //PDF.js, here is the binary data of my PDF. Please load and parse this PDF
+    //pdfjsLib comes from the PDF.js library we loaded in index.html.
 
-    let extractedText = "";
+    const pdf = await pdfjsLib.getDocument(typedArray).promise; //await because loading the pdf takes time
 
+    let extractedText = ""; //empty string , later we will gradually add the text from the pdf
+
+    //pdf.numPages gives the number of pages of the pdf
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
       const page = await pdf.getPage(pageNumber);
 
@@ -287,5 +311,33 @@ function readPdf(file) {
     documentText = extractedText;
   };
 
-  reader.readAsArrayBuffer(file);
+  reader.readAsArrayBuffer(file); //this tells the files reader to read the file as  ArrayBuffer not as plain Text
+  //We can think of ArrayBuffer as a block of raw binary data representing a file
 }
+
+//Proper Flow
+// PDF File
+//    ↓
+// FileReader
+//    ↓
+// readAsArrayBuffer()
+//    ↓
+// ArrayBuffer
+// (raw PDF bytes)
+//    ↓
+// Uint8Array
+// (byte-level view)
+//    ↓
+// PDF.js
+//    ↓
+// Load PDF
+//    ↓
+// Get each page
+//    ↓
+// Get text from each page
+//    ↓
+// Combine all page text
+//    ↓
+// documentText
+//    ↓
+// Gemini uses it to answer questions
