@@ -137,7 +137,7 @@ function displayAiMessage(message) {
 
   const bubble = document.createElement("div");
   bubble.classList.add("bubble", "ai-bubble");
-  bubble.textContent = message;
+  bubble.innerHTML = marked.parse(message);
 
   div.appendChild(avatar);
   div.appendChild(bubble);

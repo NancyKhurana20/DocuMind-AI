@@ -407,6 +407,35 @@
       margin-bottom: 4px;
     }
 
+    .ai-message p {
+  line-height: 1.6;
+}
+
+.ai-message strong {
+  font-weight: 600;
+}
+
+.ai-message ul,
+.ai-message ol {
+  margin: 8px 0 10px 20px;
+  padding-left: 10px;
+}
+
+.ai-message li {
+  margin-bottom: 6px;
+}
+
+.ai-message h1,
+.ai-message h2,
+.ai-message h3 {
+  margin: 12px 0 8px;
+}
+
+.ai-message code {
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+}
     .user-bubble {
       background: rgba(16, 185, 129, 0.14);
       border: 1px solid var(--accent-soft-border);
