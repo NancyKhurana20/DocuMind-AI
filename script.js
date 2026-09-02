@@ -79,6 +79,8 @@ function readTxt(file) {
   reader.readAsText(file);
 }
 async function handleSendMessage() {
+  //if user tries to send a new  message through enter key , if already one is being processed then it will not work
+  if (sendBtn.disabled) return;
   //Get input value
   const inputText = chatInput.value;
   //Validate input
