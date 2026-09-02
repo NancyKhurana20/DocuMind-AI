@@ -733,3 +733,8 @@
   min-width: 0;
   flex: 1;
 }
+#sendBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}

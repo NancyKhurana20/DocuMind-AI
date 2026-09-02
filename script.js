@@ -94,11 +94,16 @@ async function handleSendMessage() {
   displayUserMessage(inputText);
   chatInput.value = "";
   chatInput.focus();
+  sendBtn.disabled = true;
   const loadingElement = showLoadingMessage();
-  const aiResponse = await getAIResponse(inputText);
+  try {
+    const aiResponse = await getAIResponse(inputText);
 
-  loadingElement.remove();
-  displayAiMessage(aiResponse);
+    loadingElement.remove();
+    displayAiMessage(aiResponse);
+  } finally {
+    sendBtn.disabled = false;
+  }
 }
 function displayUserMessage(message) {
   const div = document.createElement("div");
