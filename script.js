@@ -6,6 +6,7 @@ const sendBtn = document.querySelector("#sendBtn");
 const chatArea = document.querySelector("#chatArea");
 const suggestionPills = document.querySelectorAll(".suggestion-pill");
 const newChat = document.querySelector("#new-chat");
+const fileError = document.querySelector("#fileError");
 
 //Types of files which are allowed for users to upload
 const allowedTypes = [
@@ -14,7 +15,7 @@ const allowedTypes = [
   "text/plain",
 ];
 //Function which will handle the file upload
-const handleFileUpload = function (event) {
+const handleFileUpload = async function (event) {
   //Getting the file which has been uploaded
   const file = event.target.files[0];
 
@@ -22,6 +23,9 @@ const handleFileUpload = function (event) {
   if (!file) {
     return;
   }
+  //Clear previous error
+  fileError.textContent = "";
+
   //Max file size allowed is 20MB
   const maxFileSize = 20 * 1024 * 1024;
 
@@ -30,23 +34,33 @@ const handleFileUpload = function (event) {
 
   //Checking if the uploaded file is valid or not
   if (!isValidFile) {
-    console.log("File type is not valid");
+    showFileError("File type is not valid.");
     return;
   }
 
   // Check file size
   if (file.size > maxFileSize) {
-    console.log("File size must be 20 MB or less.");
+    showFileError("File size must be 20 MB or less.");
     return;
   }
-  // Display the uploaded file
-  displayUploadedFile(file);
 
-  // Extract text from the uploaded file
-  extractDocumentText(file);
+  // Clear previous document text
+  documentText = "";
+  docList.replaceChildren();
+
+  // Try to extract the document text
+  const extractionSuccessful = await extractDocumentText(file);
+
+  // Only display the file if extraction was successful
+  if (extractionSuccessful) {
+    displayUploadedFile(file);
+  }
 };
 function getFileType(file) {
   return file.name.split(".").pop().toUpperCase();
+}
+function showFileError(message) {
+  fileError.textContent = message;
 }
 //As soon as file will be uploaded this event handler will be called and handleFileUpload function will be called
 fileUpload.addEventListener("change", handleFileUpload);
@@ -55,8 +69,7 @@ function displayUploadedFile(file) {
   const typeOfFile = getFileType(file);
   const html = `
   <li class="doc-item active">
-    <div class="doc-icon" ${typeOfFile}>${typeOfFile}</div>
-
+    <div class="doc-icon ${typeOfFile.toLowerCase()}">${typeOfFile}</div>
       <div>
         <p class="doc-name">${file.name}</p>
         <p class="doc-sub">${typeOfFile} Document</p>
@@ -65,40 +78,45 @@ function displayUploadedFile(file) {
   `;
   docList.innerHTML = html;
 }
-function extractDocumentText(file) {
-  console.log(`Extracting the text from ${file.name}`);
+async function extractDocumentText(file) {
   const type = getFileType(file);
   switch (type) {
     case "PDF":
-      readPdf(file);
-      break;
+      return await readPdf(file);
     case "DOCX":
-      readDocx(file);
-      break;
+      return await readDocx(file);
+
     case "TXT":
-      readTxt(file);
-      break;
+      return await readTxt(file);
+    default:
+      return false;
   }
 }
 function readTxt(file) {
-  //Creating a reader which will read our file
-  const reader = new FileReader();
+  return new Promise(function (resolve) {
+    const reader = new FileReader();
 
-  // Tell the browser what to do when reading finishes
-  reader.onload = function () {
-    documentText = reader.result;
+    reader.onload = function () {
+      documentText = reader.result;
 
-    if (documentText.trim() === "") {
-      console.log("file is empty");
-    }
-  };
+      if (documentText.trim() === "") {
+        showFileError("File is empty");
+        documentText = "";
+        resolve(false);
+        return;
+      }
 
-  reader.onerror = function () {
-    console.error("Could not read the TXT file.");
-    documentText = "";
-  };
-  // Start reading the file
-  reader.readAsText(file);
+      resolve(true);
+    };
+
+    reader.onerror = function () {
+      showFileError("Could not read the TXT file.");
+      documentText = "";
+      resolve(false);
+    };
+
+    reader.readAsText(file);
+  });
 }
 async function handleSendMessage() {
   //if user tries to send a new  message through enter key , if already one is being processed then it will not work
@@ -111,7 +129,7 @@ async function handleSendMessage() {
   }
   //check document exists
   if (documentText === "") {
-    console.log("file has not been uploaded");
+    showFileError("File has not been uploaded");
     return;
   }
   //display user message
@@ -324,55 +342,56 @@ suggestionPills.forEach(function (suggestionPill) {
 // script.js can use pdfjsLib
 
 function readPdf(file) {
-  const reader = new FileReader(); //FileReader is a browser API that allows JavaScript to read files selected by the user.
+  return new Promise(function (resolve) {
+    const reader = new FileReader();
 
-  //When file is finished loading /reading , then we execute this function
+    reader.onload = async function () {
+      try {
+        const typedArray = new Uint8Array(reader.result);
 
-  reader.onload = async function () {
-    //reader.result contains the data that FileReader has read
-    //We convert that data into Uint8Array
-    //PDF.js can accept this byte-array representation of the PDF data.
+        const pdf = await pdfjsLib.getDocument(typedArray).promise;
 
-    //reader.result already contains the raw binary data ,Uint8Array doesn't convert text into binary. Instead, it creates a convenient byte-level view of that binary data.
-    try {
-      const typedArray = new Uint8Array(reader.result);
+        let extractedText = "";
 
-      //PDF.js, here is the binary data of my PDF. Please load and parse this PDF
-      //pdfjsLib comes from the PDF.js library we loaded in index.html.
+        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+          const page = await pdf.getPage(pageNumber);
 
-      const pdf = await pdfjsLib.getDocument(typedArray).promise; //await because loading the pdf takes time
+          const textContent = await page.getTextContent();
 
-      let extractedText = ""; //empty string , later we will gradually add the text from the pdf
+          const pageText = textContent.items.map((item) => item.str).join(" ");
 
-      //pdf.numPages gives the number of pages of the pdf
-      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-        const page = await pdf.getPage(pageNumber);
+          extractedText += pageText + "\n";
+        }
 
-        const textContent = await page.getTextContent();
+        documentText = extractedText;
 
-        const pageText = textContent.items.map((item) => item.str).join(" ");
+        // Check if PDF contains no readable text
+        if (documentText.trim() === "") {
+          showFileError("File is empty");
+          documentText = "";
+          resolve(false);
+          return;
+        }
 
-        extractedText += pageText + "\n";
+        resolve(true);
+      } catch (error) {
+        console.error("PDF extraction error:", error);
+
+        showFileError("PDF extraction failed");
+        documentText = "";
+        resolve(false);
       }
+    };
 
-      documentText = extractedText;
-
-      if (documentText.trim() === "") {
-        console.log("file is empty");
-      }
-    } catch (error) {
-      console.error("PDF extraction failed:", error);
+    // Handle file reading errors
+    reader.onerror = function () {
+      showFileError("Could not read the PDF file.");
       documentText = "";
-    }
-  };
+      resolve(false);
+    };
 
-  // Handle file reading errors
-  reader.onerror = function () {
-    console.error("Could not read the PDF file.");
-    documentText = "";
-  };
-  reader.readAsArrayBuffer(file); //this tells the files reader to read the file as  ArrayBuffer not as plain Text
-  //We can think of ArrayBuffer as a block of raw binary data representing a file
+    reader.readAsArrayBuffer(file);
+  });
 }
 
 //Proper Flow
@@ -403,38 +422,51 @@ function readPdf(file) {
 // Gemini uses it to answer questions
 
 function readDocx(file) {
-  const reader = new FileReader();
+  return new Promise(function (resolve) {
+    const reader = new FileReader();
 
-  reader.onload = async function () {
-    try {
-      const arrayBuffer = reader.result;
+    reader.onload = async function () {
+      try {
+        const arrayBuffer = reader.result;
 
-      const result = await mammoth.extractRawText({
-        arrayBuffer: arrayBuffer,
-      });
+        const result = await mammoth.extractRawText({
+          arrayBuffer: arrayBuffer,
+        });
 
-      documentText = result.value;
-      if (documentText.trim() === "") {
-        console.log("file is empty");
+        documentText = result.value;
+
+        // Check if DOCX contains no readable text
+        if (documentText.trim() === "") {
+          showFileError("File is empty");
+          documentText = "";
+          resolve(false);
+          return;
+        }
+
+        resolve(true);
+      } catch (error) {
+        console.error("DOCX extraction error:", error);
+
+        showFileError("DOCX extraction failed");
+        documentText = "";
+        resolve(false);
       }
-    } catch (error) {
-      console.error("DOCX extraction failed:", error);
+    };
+
+    // Handle file reading errors
+    reader.onerror = function () {
+      showFileError("Could not read the DOCX file.");
       documentText = "";
-    }
-  };
+      resolve(false);
+    };
 
-  // Handle file reading errors
-  reader.onerror = function () {
-    console.error("Could not read the DOCX file.");
-    documentText = "";
-  };
-
-  reader.readAsArrayBuffer(file);
+    reader.readAsArrayBuffer(file);
+  });
 }
-
 newChat.addEventListener("click", function () {
   chatArea.replaceChildren();
   docList.replaceChildren();
   documentText = "";
   fileUpload.value = "";
+  fileError.textContent = "";
 });

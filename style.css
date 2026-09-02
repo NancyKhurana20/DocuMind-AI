@@ -155,6 +155,12 @@
       color: var(--muted-dim);
     }
 
+    .file-error {
+  margin: 8px 0 0;
+  font-size: 0.75rem;
+  color: #ef4444;
+  text-align: center;
+}
     /* Section label */
     .section-label {
       font-size: 0.68rem;
