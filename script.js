@@ -22,14 +22,28 @@ const handleFileUpload = function (event) {
   if (!file) {
     return;
   }
-  //Checking if the uploaded file is valid or not
+  //Max file size allowed is 20MB
+  const maxFileSize = 20 * 1024 * 1024;
+
+  // Checking if the uploaded file is valid or not
   const isValidFile = allowedTypes.includes(file.type);
-  if (isValidFile) {
-    displayUploadedFile(file);
-    extractDocumentText(file);
-  } else {
+
+  //Checking if the uploaded file is valid or not
+  if (!isValidFile) {
     console.log("File type is not valid");
+    return;
   }
+
+  // Check file size
+  if (file.size > maxFileSize) {
+    console.log("File size must be 20 MB or less.");
+    return;
+  }
+  // Display the uploaded file
+  displayUploadedFile(file);
+
+  // Extract text from the uploaded file
+  extractDocumentText(file);
 };
 function getFileType(file) {
   return file.name.split(".").pop().toUpperCase();
@@ -73,8 +87,16 @@ function readTxt(file) {
   // Tell the browser what to do when reading finishes
   reader.onload = function () {
     documentText = reader.result;
+
+    if (documentText.trim() === "") {
+      console.log("file is empty");
+    }
   };
 
+  reader.onerror = function () {
+    console.error("Could not read the TXT file.");
+    documentText = "";
+  };
   // Start reading the file
   reader.readAsText(file);
 }
@@ -312,29 +334,43 @@ function readPdf(file) {
     //PDF.js can accept this byte-array representation of the PDF data.
 
     //reader.result already contains the raw binary data ,Uint8Array doesn't convert text into binary. Instead, it creates a convenient byte-level view of that binary data.
-    const typedArray = new Uint8Array(reader.result);
+    try {
+      const typedArray = new Uint8Array(reader.result);
 
-    //PDF.js, here is the binary data of my PDF. Please load and parse this PDF
-    //pdfjsLib comes from the PDF.js library we loaded in index.html.
+      //PDF.js, here is the binary data of my PDF. Please load and parse this PDF
+      //pdfjsLib comes from the PDF.js library we loaded in index.html.
 
-    const pdf = await pdfjsLib.getDocument(typedArray).promise; //await because loading the pdf takes time
+      const pdf = await pdfjsLib.getDocument(typedArray).promise; //await because loading the pdf takes time
 
-    let extractedText = ""; //empty string , later we will gradually add the text from the pdf
+      let extractedText = ""; //empty string , later we will gradually add the text from the pdf
 
-    //pdf.numPages gives the number of pages of the pdf
-    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-      const page = await pdf.getPage(pageNumber);
+      //pdf.numPages gives the number of pages of the pdf
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+        const page = await pdf.getPage(pageNumber);
 
-      const textContent = await page.getTextContent();
+        const textContent = await page.getTextContent();
 
-      const pageText = textContent.items.map((item) => item.str).join(" ");
+        const pageText = textContent.items.map((item) => item.str).join(" ");
 
-      extractedText += pageText + "\n";
+        extractedText += pageText + "\n";
+      }
+
+      documentText = extractedText;
+
+      if (documentText.trim() === "") {
+        console.log("file is empty");
+      }
+    } catch (error) {
+      console.error("PDF extraction failed:", error);
+      documentText = "";
     }
-
-    documentText = extractedText;
   };
 
+  // Handle file reading errors
+  reader.onerror = function () {
+    console.error("Could not read the PDF file.");
+    documentText = "";
+  };
   reader.readAsArrayBuffer(file); //this tells the files reader to read the file as  ArrayBuffer not as plain Text
   //We can think of ArrayBuffer as a block of raw binary data representing a file
 }
@@ -370,13 +406,27 @@ function readDocx(file) {
   const reader = new FileReader();
 
   reader.onload = async function () {
-    const arrayBuffer = reader.result;
+    try {
+      const arrayBuffer = reader.result;
 
-    const result = await mammoth.extractRawText({
-      arrayBuffer: arrayBuffer,
-    });
+      const result = await mammoth.extractRawText({
+        arrayBuffer: arrayBuffer,
+      });
 
-    documentText = result.value;
+      documentText = result.value;
+      if (documentText.trim() === "") {
+        console.log("file is empty");
+      }
+    } catch (error) {
+      console.error("DOCX extraction failed:", error);
+      documentText = "";
+    }
+  };
+
+  // Handle file reading errors
+  reader.onerror = function () {
+    console.error("Could not read the DOCX file.");
+    documentText = "";
   };
 
   reader.readAsArrayBuffer(file);
