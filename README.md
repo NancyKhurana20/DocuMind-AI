@@ -84,3 +84,4 @@ DocuMind-AI/
 │── script.js
 │── config.js
 │── README.md
+```
