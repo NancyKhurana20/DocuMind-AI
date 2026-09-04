@@ -65,15 +65,13 @@ DocuMind AI is a frontend web application that allows users to upload documents 
 
 ## 📸 Application Preview
 
-Add screenshots of the application here.
+### 🏠 Home Screen
 
-Recommended screenshots:
+![DocuMind AI Home Screen](Images/DocuMindAI.png)
 
-- Home Screen
-- Document Upload
-- Chat Interface
-- AI Response
-- Error Message
+### 💬 Document Question Answering
+
+![DocuMind AI Chat](Images/AskingQue.png)
 
 ---
 
