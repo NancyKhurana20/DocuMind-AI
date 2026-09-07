@@ -4,6 +4,12 @@ DocuMind AI is a frontend web application that allows users to upload documents 
 
 ---
 
+## 🚀 Live Demo
+
+👉 [Try DocuMind AI](https://nancy-documind-ai.netlify.app/)
+
+---
+
 ## ✨ Features
 
 - Upload **PDF, DOCX, and TXT** documents.
